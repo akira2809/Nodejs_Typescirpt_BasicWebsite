@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES6", // or "ES2020" for more modern syntax
+    "module": "ES6", // or "ESNext"
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node"
+  },
+  "include": ["src/**/*.ts", "src/routes/index.ts"],
+  "exclude": ["dist"]
+}
