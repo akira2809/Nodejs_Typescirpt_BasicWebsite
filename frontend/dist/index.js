@@ -1,7 +1,8 @@
-"use strict";
-fetch("http://localhost:3000/products/getProducts")
-    .then((response) => response.json())
-    .then((data) => {
+import axios from "axios";
+// Make the GET request using Axios
+axios.get("http://localhost:3000/products/getProducts")
+    .then((response) => {
+    const data = response.data;
     const productDiv = document.getElementById("product-list");
     if (productDiv) {
         productDiv.innerHTML = ""; // Clear the existing content

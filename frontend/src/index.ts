@@ -1,12 +1,15 @@
+import axios from "axios";
+
 interface Product {
     id: number;
     name: string;
     price: number;
 }
 
-fetch("http://localhost:3000/products/getProducts")
-    .then((response) => response.json())
-    .then((data: Product[]) => {
+// Make the GET request using Axios
+axios.get("http://localhost:3000/products/getProducts")
+    .then((response) => {
+        const data: Product[] = response.data;
         const productDiv = document.getElementById("product-list");
         if (productDiv) {
             productDiv.innerHTML = ""; // Clear the existing content
