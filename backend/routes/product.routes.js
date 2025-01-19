@@ -7,7 +7,7 @@ const {
 } = require('../controllers/product.controller');
 
 // Các route cho sản phẩm
-router.get('/products', getAllProducts);
+router.get('/', getAllProducts);
 router.get('/products/:id', getProductById);
 
 module.exports = router;
