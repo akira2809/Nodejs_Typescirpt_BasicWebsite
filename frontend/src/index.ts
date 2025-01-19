@@ -1,67 +1,78 @@
-import axios from "axios";
+// app.ts
+import { Product, getProducts } from './api/product';
 
-// Thiết lập URL cơ sở cho axios
-axios.defaults.baseURL = "http://localhost:3000";
+class ProductDisplay {
+    private productList: HTMLElement;
+    private loading: HTMLElement;
+    private error: HTMLElement;
 
-// Interface cho Product
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-  price: number;
-  stock: number;
-  created_at: string;
-}
-
-// Function để fetch và hiển thị sản phẩm
-async function fetchAndDisplayProducts() {
-  try {
-    // Gọi API lấy danh sách sản phẩm
-    const response = await axios.get<Product[]>("/products");
-    const products = response.data;
-
-    // Tìm phần tử HTML để render sản phẩm
-    const productList = document.getElementById("products-list");
-
-    if (!productList) {
-      console.error("Element #products-list not found");
-      return;
+    constructor() {
+        this.productList = document.getElementById('productList')!;
+        this.loading = document.getElementById('loading')!;
+        this.error = document.getElementById('error')!;
+        this.initialize();
     }
 
-    // Xóa nội dung cũ
-    productList.innerHTML = "";
+    private async initialize(): Promise<void> {
+        try {
+            await this.loadProducts();
+        } catch (error) {
+            this.showError('Có lỗi khi tải sản phẩm');
+        }
+    }
 
-    // Render sản phẩm
-    products.forEach((product) => {
-      const productHTML = `
-        <div class="swiper-slide">
-          <div class="product-item image-zoom-effect link-effect">
-            <div class="image-holder position-relative">
-              <a href="product-detail.html?id=${product.id}">
-                <img src="${product.image}" alt="${product.name}" class="product-image img-fluid">
-              </a>
-              <a href="#" class="btn-icon btn-wishlist">
-                <svg width="24" height="24" viewBox="0 0 24 24">
-                  <use xlink:href="#heart"></use>
-                </svg>
-              </a>
-              <div class="product-content">
-                <h5 class="element-title text-uppercase fs-5 mt-3">
-                  <a href="product-detail.html?id=${product.id}">${product.name}</a>
-                </h5>
-                <a href="#" class="text-decoration-none" data-after="Add to cart"><span>$${product.price.toFixed(2)}</span></a>
-              </div>
+    private async loadProducts(): Promise<void> {
+        try {
+            const products = await getProducts();
+            this.displayProducts(products);
+        } catch (error) {
+            throw error;
+        } finally {
+            this.loading.style.display = 'none';
+        }
+    }
+
+    private displayProducts(products: Product[]): void {
+        this.productList.innerHTML = products.map(product => this.createProductCard(product)).join('');
+    }
+
+    private createProductCard(product: Product): string {
+        return `
+            <div class="product-card" data-id="${product.id}">
+                <img 
+                    src="${product.image}" 
+                    alt="${product.name}"
+                    class="product-image"
+                    onerror="this.src='/api/placeholder/150/150'"
+                >
+                <h3>${product.name}</h3>
+                <p>${product.description}</p>
+                <p><strong>Giá: ${this.formatPrice(product.price)} VNĐ</strong></p>
+                <p>Còn lại: ${product.stock} sản phẩm</p>
+                <button onclick="handleBuyProduct(${product.id})">Mua ngay</button>
             </div>
-          </div>
-        </div>
-      `;
-      productList.insertAdjacentHTML("beforeend", productHTML);
-    });
-  } catch (error) {
-    console.error("Error fetching products:", error);
-  }
+        `;
+    }
+
+    private formatPrice(price: number): string {
+        return price.toLocaleString('vi-VN');
+    }
+
+    private showError(message: string): void {
+        this.error.textContent = message;
+        this.error.style.display = 'block';
+        this.loading.style.display = 'none';
+    }
 }
 
-// Gọi function khi trang web load xong
-fetchAndDisplayProducts();
+// Khởi tạo ứng dụng
+window.addEventListener('DOMContentLoaded', () => {
+    new ProductDisplay();
+});
+
+// Xử lý sự kiện mua hàng (có thể thêm vào giỏ hàng hoặc chuyển đến trang thanh toán)
+(window as any).handleBuyProduct = (productId: number) => {
+    console.log(`Mua sản phẩm có ID: ${productId}`);
+    // Thêm logic xử lý mua hàng ở đây
+    alert(`Đã thêm sản phẩm ${productId} vào giỏ hàng!`);
+};

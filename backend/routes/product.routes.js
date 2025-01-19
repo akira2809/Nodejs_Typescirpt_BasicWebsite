@@ -8,6 +8,6 @@ const {
 
 // Các route cho sản phẩm
 router.get('/', getAllProducts);
-router.get('/products/:id', getProductById);
+router.get('/:id', getProductById);
 
 module.exports = router;

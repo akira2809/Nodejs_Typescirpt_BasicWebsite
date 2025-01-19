@@ -11,6 +11,6 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node"
   },
-  "include": ["src/**/*.ts", "src/routes/index.ts"],
+  "include": ["src/**/*.ts", "src/routes/index.ts", "src/axiosConfig.ts"],
   "exclude": ["dist"]
 }
