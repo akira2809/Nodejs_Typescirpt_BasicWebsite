@@ -1,78 +1,576 @@
-// app.ts
-import { Product, getProducts } from './api/product';
+import { ProductResponse, CategoryResponse, CartItem } from './types';
 
-class ProductDisplay {
-    private productList: HTMLElement;
-    private loading: HTMLElement;
-    private error: HTMLElement;
+const BASE_URL = 'http://127.0.0.1:3000';
 
-    constructor() {
-        this.productList = document.getElementById('productList')!;
-        this.loading = document.getElementById('loading')!;
-        this.error = document.getElementById('error')!;
-        this.initialize();
+const fetchData = async <T>(endpoint: string, id?: string | number): Promise<T> => {
+  try {
+    const url = id ? `${BASE_URL}/${endpoint}/${id}` : `${BASE_URL}/${endpoint}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) throw new Error(`Lỗi tải ${endpoint}: ${response.statusText}`);
+    return await response.json();
+  } catch (error) {
+    console.error(`Lỗi khi tải ${endpoint}:`, error);
+    throw error;
+  }
+};
+
+const loadDropdown = async () => {
+  const categoryMenu = document.querySelector('.dropdown-menu');
+  if (!categoryMenu) return console.error('Không tìm thấy .dropdown-menu');
+
+  try {
+    const categories: CategoryResponse[] = await fetchData('categories/category');
+    categoryMenu.innerHTML = categories.length
+      ? categories
+        .map(
+          ({ id, name }) =>
+            `<li>
+                <a href="ProductbyCate.html?category=${id}" class="dropdown-item item-anchor menuitem">${name}</a>
+              </li>`
+        )
+        .join('')
+      : '<li class="dropdown-item">Không có danh mục nào.</li>';
+  } catch (error) {
+    console.error('Lỗi khi tải danh mục:', error);
+    categoryMenu.innerHTML = '<li class="dropdown-item text-danger">Lỗi tải danh mục!</li>';
+  }
+};
+
+const loadCategoryBar = async () => {
+  const categoryBar = document.querySelector('.breadcrumb');
+  if (!categoryBar) return console.error('Không tìm thấy .breadcrumb');
+
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('products');
+
+    if (!productId) {
+      categoryBar.innerHTML = `<li class="breadcrumb-item active">Không có sản phẩm</li>`;
+      return;
     }
 
-    private async initialize(): Promise<void> {
-        try {
-            await this.loadProducts();
-        } catch (error) {
-            this.showError('Có lỗi khi tải sản phẩm');
-        }
-    }
+    const product: ProductResponse = await fetchData('products', productId);
+    const category: CategoryResponse[] = await fetchData('categories/product', productId);
+    console.log(category);
+    categoryBar.innerHTML = `
+      <li class="breadcrumb-item">
+        <a href="/" class="text-decoration-none text-muted">Trang chủ</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="ProductbyCate.html?category=${category[0].id}" class="text-decoration-none text-muted">${category[0].name}</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        ${product.name}
+      </li>
+    `;
+  } catch (error) {
+    console.error('Lỗi khi tải breadcrumb:', error);
+    categoryBar.innerHTML = `<li class="breadcrumb-item active text-danger">Lỗi tải dữ liệu</li>`;
+  }
+};
 
-    private async loadProducts(): Promise<void> {
-        try {
-            const products = await getProducts();
-            this.displayProducts(products);
-        } catch (error) {
-            throw error;
-        } finally {
-            this.loading.style.display = 'none';
-        }
-    }
+const loadProducts = async () => {
 
-    private displayProducts(products: Product[]): void {
-        this.productList.innerHTML = products.map(product => this.createProductCard(product)).join('');
-    }
-
-    private createProductCard(product: Product): string {
-        return `
-            <div class="product-card" data-id="${product.id}">
-                <img 
-                    src="${product.image}" 
-                    alt="${product.name}"
-                    class="product-image"
-                    onerror="this.src='/api/placeholder/150/150'"
-                >
-                <h3>${product.name}</h3>
-                <p>${product.description}</p>
-                <p><strong>Giá: ${this.formatPrice(product.price)} VNĐ</strong></p>
-                <p>Còn lại: ${product.stock} sản phẩm</p>
-                <button onclick="handleBuyProduct(${product.id})">Mua ngay</button>
+  const productCarousel = document.querySelector('#new-arrivals-section .swiper-wrapper');
+  if (!productCarousel) return console.error('Không tìm thấy .swiper-wrapper');
+  try {
+    const products: ProductResponse[] = await fetchData('products');
+    renderProduct(products);
+  } catch (error) {
+    console.error('Lỗi khi tải sản phẩm:', error);
+    productCarousel.innerHTML =
+      '<p class="error-message">Không thể tải sản phẩm. Vui lòng thử lại sau!</p>';
+  }
+};
+const renderProduct = (products: ProductResponse[]) => {
+  const productCarousel = document.querySelector('#new-arrivals-section .swiper-wrapper');
+  if (!productCarousel) return console.error('Không tìm thấy .swiper-wrapper');
+  productCarousel.innerHTML = products.length
+    ? products
+      .map(
+        ({ id, image, name, price }) => `
+      <div class="swiper-slide">
+        <div class="product-item image-zoom-effect link-effect">
+          <div class="image-holder position-relative">
+            <a href="detail.html?products=${id}">
+              <img src="${image}" alt="${name}" class="product-image img-fluid">
+            </a>
+            <a href="#" class="btn-icon btn-wishlist">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <use xlink:href="#heart"></use>
+              </svg>
+            </a>
+            <div class="product-content">
+              <h5 class="text-uppercase fs-5 mt-3">
+                <a href="detail.html?products=${id}">${name}</a>
+              </h5>
+              <a href="#" class="text-decoration-none" data-after="Add to cart">
+                <span>${price.toLocaleString('vi-VN')} VND</span>
+              </a>
             </div>
-        `;
-    }
-
-    private formatPrice(price: number): string {
-        return price.toLocaleString('vi-VN');
-    }
-
-    private showError(message: string): void {
-        this.error.textContent = message;
-        this.error.style.display = 'block';
-        this.loading.style.display = 'none';
-    }
+          </div>
+        </div>
+      </div>
+    `
+      )
+      .join('')
+    : '<p class="no-products">Không có sản phẩm nào.</p>';
 }
 
-// Khởi tạo ứng dụng
-window.addEventListener('DOMContentLoaded', () => {
-    new ProductDisplay();
+// 🛒 Lấy giỏ hàng từ localStorage
+const getCart = (): CartItem[] => {
+  return JSON.parse(localStorage.getItem('cart') || '[]');
+};
+
+// 💾 Lưu giỏ hàng vào localStorage
+const saveCart = (cart: CartItem[]) => {
+  localStorage.setItem('cart', JSON.stringify(cart));
+};
+const updateCount = () => {
+  const cartCountElement = document.querySelector('.cart-count')! as HTMLElement; 
+  let cart = getCart();
+  cartCountElement.textContent = `(${cart.length})`;
+}
+// 🔄 Cập nhật giao diện giỏ hàng trong offcanvas
+const updateCartUI = () => {
+  const cartList = document.querySelector('#offcanvasCart .list-group') as HTMLUListElement | null;
+  const totalPriceElement = document.querySelector('#offcanvasCart strong') as HTMLElement | null;
+  const badgeElement = document.querySelector('#offcanvasCart .badge') as HTMLElement | null;
+
+  if (!cartList || !totalPriceElement || !badgeElement) {
+    console.warn("⚠️ Không tìm thấy phần tử cần cập nhật trong DOM!");
+    return;
+  }
+
+  const cart = getCart();
+  cartList.innerHTML = '';
+  let total = 0;
+  let totalItems = 0;
+
+  cart.forEach((item, index) => {
+    total += item.price * item.quantity;
+    totalItems += item.quantity;
+
+    cartList.innerHTML += `
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+          <img src="${item.image}" alt="${item.name}" width="50" class="me-3">
+          <div>
+            <h6 class="my-0">${item.name} (${item.quantity})</h6>
+            <small class="text-body-secondary">${item.price.toLocaleString('vi')} VND</small>
+          </div>
+        </div>
+        <div>
+          <span class="text-body-secondary">${(item.price * item.quantity).toLocaleString('vi')} VND</span>
+          <button class="btn btn-sm btn-danger ms-2 remove-item" data-index="${index}">&times;</button>
+        </div>
+      </li>
+    `;
+  });
+
+  totalPriceElement.innerText = `${total.toLocaleString('vi')} VND`;
+  badgeElement.innerText = cart.length.toString();
+
+  // ✨ Lưu giỏ hàng vào localStorage để không bị mất khi chuyển trang
+  localStorage.setItem('cart', JSON.stringify(cart));
+
+  updateCount();
+};
+
+
+
+
+// ➕ Thêm sản phẩm vào giỏ hàng
+const addToCart = (product: ProductResponse) => {
+  let cart = getCart();
+  const existingItem = cart.find((item) => item.id === product.id.toString());
+
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    cart.push({
+      id: product.id.toString(),
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      quantity: 1
+    });
+  }
+
+  saveCart(cart);
+  updateCount();
+  updateCartUI();
+ // 🔥 Gọi cập nhật giao diện ngay sau khi thêm sản phẩm
+};
+
+
+
+// 🗑 Xóa sản phẩm khỏi giỏ hàng
+document.addEventListener('click', (event) => {
+  const target = event.target as HTMLElement;
+  if (target.classList.contains('remove-item')) {
+    const index = parseInt(target.dataset.index!);
+    let cart = getCart();
+    cart.splice(index, 1);
+    saveCart(cart);
+    updateCartUI();
+    updateCount() ;// 🔥 Cập nhật số lượng ngay lập tức
+  }
 });
 
-// Xử lý sự kiện mua hàng (có thể thêm vào giỏ hàng hoặc chuyển đến trang thanh toán)
-(window as any).handleBuyProduct = (productId: number) => {
-    console.log(`Mua sản phẩm có ID: ${productId}`);
-    // Thêm logic xử lý mua hàng ở đây
-    alert(`Đã thêm sản phẩm ${productId} vào giỏ hàng!`);
+
+
+// 📥 Load chi tiết sản phẩm và thêm nút "Thêm vào giỏ"
+const loadProductDetail = async (): Promise<void> => {
+  const productDetailSection = document.querySelector('.product-section .container');
+  if (!productDetailSection) {
+    console.error('Không tìm thấy .product-section .container');
+    return;
+  }
+
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('products');
+
+    if (!productId) {
+      productDetailSection.innerHTML = '<p class="error-message">Không tìm thấy sản phẩm</p>';
+      return;
+    }
+
+    const product: ProductResponse = await fetchData<ProductResponse>('products', productId);
+
+    productDetailSection.innerHTML = `
+        <div class="row">
+        <!-- Product Images -->
+        <div class="col-lg-6 product-images">
+          <div class="row">
+            <div class="col-10">
+              <div class="main-image">
+                <img src="${product.image}" class="img-fluid" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-lg-6 ps-lg-5">
+          <div class="product-info">
+            <h1 class="mb-3">${product.name}</h1>
+
+            <div class="product-rating mb-3">
+              <i class="fas fa-star text-warning"></i>
+              <i class="fas fa-star text-warning"></i>
+              <i class="fas fa-star text-warning"></i>
+              <i class="fas fa-star text-warning"></i>
+              <i class="fas fa-star-half-alt text-warning"></i>
+              <span class="ms-2 text-muted">(150 đánh giá)</span>
+            </div>
+
+            <div class="product-price mb-4">
+              <span class="sale-price">${product.price.toLocaleString('vi-VN')} VND</span>
+              <span class="original-price">1.199.000₫</span>
+              <span class="badge bg-danger ms-2">-33%</span>
+            </div>
+
+            <div class="product-color mb-4">
+              <h6 class="mb-3">Màu sắc</h6>
+              <div class="color-options">
+                <input type="radio" class="btn-check" name="color" id="color-1" checked />
+                <label class="btn btn-outline-dark rounded-circle p-3 me-2" for="color-1"></label>
+
+                <input type="radio" class="btn-check" name="color" id="color-2" />
+                <label class="btn btn-outline-secondary rounded-circle p-3 me-2" for="color-2"></label>
+
+                <input type="radio" class="btn-check" name="color" id="color-3" />
+                <label class="btn btn-outline-danger rounded-circle p-3" for="color-3"></label>
+              </div>
+            </div>
+
+            <div class="product-size mb-4">
+              <h6 class="mb-3">Kích thước</h6>
+              <div class="size-select">
+                <input type="radio" class="btn-check" name="size" id="size-s" checked />
+                <label class="btn" for="size-s">S</label>
+
+                <input type="radio" class="btn-check" name="size" id="size-m" />
+                <label class="btn" for="size-m">M</label>
+
+                <input type="radio" class="btn-check" name="size" id="size-l" />
+                <label class="btn" for="size-l">L</label>
+
+                <input type="radio" class="btn-check" name="size" id="size-xl" />
+                <label class="btn" for="size-xl">XL</label>
+              </div>
+            </div>
+
+            <div class="product-quantity mb-4">
+              <h6 class="mb-3">Số lượng</h6>
+              <div class="d-flex align-items-center">
+                <button class="btn btn-outline-secondary px-3" onclick="decreaseQty()">-</button>
+                <input type="number" class="form-control text-center mx-2 qty-input" value="1" min="1" />
+                <button class="btn btn-outline-secondary px-3" onclick="increaseQty()">+</button>
+              </div>
+            </div>
+
+            <div class="product-actions d-flex gap-2 mb-4">
+            
+<button class="btn btn-primary  flex-grow-1"" id="add-to-cart" data-product-id="${product.id}">Thêm vào giỏ</button>
+
+              <button class="btn btn-danger flex-grow-1">Mua ngay</button>
+              <button class="btn btn-wishlist">
+                <i class="far fa-heart"></i>
+              </button>
+            </div>
+
+            <div class="product-meta">
+              <p class="mb-2">
+                <strong>SKU:</strong> <span class="text-muted">KF876543</span>
+              </p>
+              <p class="mb-0">
+                <strong>Tags:</strong>
+                <a href="#" class="text-decoration-none">áo len</a>,
+                <a href="#" class="text-decoration-none">thời trang</a>
+              </p>
+              <a href="#" class="text-decoration-none">Số lượng: ${product.stock}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Details Tabs -->
+      <div class="row mt-5">
+        <div class="col-12">
+          <ul class="nav nav-tabs product-details-tabs mb-4" id="productTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description">
+                Mô tả
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#additional">
+                Thông tin thêm
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews">
+                Đánh giá (150)
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content" id="productTabsContent">
+            <div class="tab-pane fade show active" id="description">
+              <p>${product.description}</p>
+              <ul class="list-unstyled">
+                <li>
+                  <i class="fas fa-check text-success me-2"></i>Chất liệu len merino cao cấp
+                </li>
+                <li>
+                  <i class="fas fa-check text-success me-2"></i>Thiết kế thời trang, hiện đại
+                </li>
+                <li>
+                  <i class="fas fa-check text-success me-2"></i>Giữ ấm tốt trong mùa lạnh
+                </li>
+                <li>
+                  <i class="fas fa-check text-success me-2"></i>Dễ dàng phối đồ
+                </li>
+              </ul>
+            </div>
+            <div class="tab-pane fade" id="additional">
+              <table class="table">
+                <tbody>
+                  <tr>
+                    <th>Chất liệu</th>
+                    <td>100% len merino</td>
+                  </tr>
+                  <tr>
+                    <th>Xuất xứ</th>
+                    <td>Việt Nam</td>
+                  </tr>
+                  <tr>
+                    <th>Hướng dẫn giặt</th>
+                    <td>Giặt tay, không sử dụng máy sấy</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tab-pane fade" id="reviews">
+              <!-- Review content here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('add-to-cart')!.onclick = () => addToCart(product);
+    
+  } catch (error) {
+    console.error('Lỗi khi tải chi tiết sản phẩm:', error);
+    productDetailSection.innerHTML = '<p class="error-message text-danger">Lỗi tải chi tiết sản phẩm</p>';
+  }
 };
+
+
+//checkout
+// 🛒 Xử lý sự kiện nhấn nút thanh toán
+document.querySelector("#checkout-btn")?.addEventListener("click", async () => {
+  const cart = getCart() || [];
+  const userId = localStorage.getItem("user_id");
+  const token = localStorage.getItem("token");
+
+  if (!userId || !token) {
+    alert("Vui lòng đăng nhập trước khi thanh toán!");
+    return;
+  }
+
+  if (!Array.isArray(cart) || cart.length === 0) {
+    alert("Giỏ hàng của bạn đang trống!");
+    return;
+  }
+
+  const orderData = {
+    user_id: userId,
+    total_amount: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    items: cart.map((item) => ({
+      product_id: item.id,
+      quantity: item.quantity,
+      price: item.price,
+    })),
+  };
+
+  try {
+    const response = await fetch(`${BASE_URL}/products/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(orderData),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(responseData.error || "Có lỗi xảy ra khi đặt hàng.");
+    }
+
+    console.log("🛒 Đơn hàng đã đặt:", responseData);
+    localStorage.removeItem("cart");
+    updateCartUI();
+    alert("Đặt hàng thành công!");
+
+    setTimeout(() => {
+      window.location.href = "cart.html";
+    }, 1000);
+  } catch (error) {
+    console.error("Lỗi khi đặt hàng:", error);
+    alert("Thanh toán thất bại: " + (error instanceof Error ? error.message : String(error)));
+  }
+});
+
+document.getElementById("logout-btn")?.addEventListener("click", () => {
+  localStorage.removeItem("token");
+  alert("Bạn đã đăng xuất!");
+  window.location.href = "login.html";
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const orderId = getOrderIdFromURL(); // Lấy order_id từ URL
+  if (!orderId) {
+    showError("Không tìm thấy Order ID trong URL.");
+    return;
+  }
+  fetchOrderDetails(orderId);
+});
+
+// Hàm lấy order_id từ URL (kiểm tra nhiều cách)
+function getOrderIdFromURL(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  let orderId = params.get("order_id");
+
+  // Nếu không tìm thấy trong query params, thử lấy từ hash
+  if (!orderId && window.location.hash) {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    orderId = hashParams.get("order_id");
+  }
+
+  // Nếu vẫn không có, thử lấy từ path (dạng /orders/:orderId)
+  if (!orderId) {
+    const pathSegments = window.location.pathname.split("/");
+    if (pathSegments.length > 2 && pathSegments[1] === "orders") {
+      orderId = pathSegments[2];
+    }
+  }
+
+  return orderId;
+}
+
+// Gọi API để lấy thông tin đơn hàng
+async function fetchOrderDetails(orderId: string) {
+  try {
+    const response = await fetch(`http://localhost:3000/orders/${orderId}`);
+    if (!response.ok) throw new Error("Failed to fetch order details");
+
+    const data = await response.json();
+    if (!data || !data.order || !data.items) {
+      throw new Error("Dữ liệu đơn hàng không hợp lệ.");
+    }
+    displayOrderDetails(data);
+  } catch (error) {
+    console.error("Error fetching order details:", error);
+    showError("Không thể lấy thông tin đơn hàng. Vui lòng thử lại!");
+  }
+}
+
+// Hiển thị thông tin đơn hàng
+function displayOrderDetails(order: any) {
+  const orderContainer = document.getElementById("order-details");
+  if (!orderContainer) return;
+
+  orderContainer.innerHTML = `
+    <h2>Order ID: ${order.order.order_id}</h2>
+    <p>User ID: ${order.order.user_id}</p>
+    <p>Total Amount: $${order.order.total_amount.toFixed(2)}</p>
+    <h3>Items:</h3>
+    <ul id="order-items"></ul>
+  `;
+
+  const itemsContainer = document.getElementById("order-items");
+  if (!itemsContainer) return;
+
+  itemsContainer.innerHTML = order.items.map((item: any) => `
+    <li>
+      <strong>Product ID:</strong> ${item.product_id} -
+      <strong>Quantity:</strong> ${item.quantity} -
+      <strong>Price:</strong> $${item.price.toFixed(2)}
+    </li>
+  `).join("");
+}
+
+// Hiển thị thông báo lỗi
+function showError(message: string) {
+  const orderContainer = document.getElementById("order-details");
+  if (orderContainer) {
+    orderContainer.innerHTML = `<p style="color: red;">${message}</p>`;
+  }
+}
+
+
+// ⏳ Chạy khi trang tải xong
+document.addEventListener('DOMContentLoaded', () => {
+  loadProductDetail();
+  updateCartUI();
+  loadDropdown();
+loadProducts();
+loadCategoryBar();
+});
+
+
+
+
+
+

@@ -1,46 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product List</title>
-    <style>
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 20px;
-        }
-        .product-card {
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .product-image {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-            margin-bottom: 10px;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-        }
-        .error {
-            color: red;
-            text-align: center;
-            padding: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div id="app">
-        <div id="loading" class="loading">Loading...</div>
-        <div id="error" class="error" style="display: none;"></div>
-        <div id="productList" class="product-grid"></div>
-    </div>
-
-    <script type="module" src="../dist/index.js"></script>
-</body>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Menu Đa Cấp</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <button class="btn btn-primary flex-grow-1" onclick="addToCart()">
+      <i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ
+    </button>
+    
+  </body>
 </html>
+
+<script type="module" src="../dist/index.js"></script>
+<style>
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+}
+
+.menu {
+    background: #333;
+}
+
+.menu #main-menu {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+}
+
+.menu ul li {
+    position: relative;
+}
+
+.menu ul li a {
+    display: block;
+    color: white;
+    padding: 15px 20px;
+    text-decoration: none;
+    transition: background 0.3s;
+}
+
+.menu ul li:hover {
+    background: #555;
+}
+
+/* Dropdown cấp 1 */
+.submenu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #444;
+    min-width: 150px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.submenu li {
+    display: block;
+}
+
+.submenu li a {
+    padding: 10px;
+    display: block;
+    transition: background 0.3s;
+}
+
+.submenu li a:hover {
+    background: #666;
+}
+
+/* Dropdown cấp 2 */
+.submenu .dropdown {
+    position: relative;
+}
+
+.submenu .sub-level {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    background: #444;
+    min-width: 150px;
+    border-radius: 5px;
+}
+
+.submenu .dropdown:hover .sub-level {
+    display: block;
+}
+
+/* Hiện submenu khi hover */
+.dropdown:hover > .submenu {
+    display: block;
+}
+
+</style>
