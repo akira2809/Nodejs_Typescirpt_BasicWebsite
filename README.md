@@ -90,7 +90,7 @@ This project is licensed under the **MIT License** – feel free to use and modi
 ---
 
 ## **Contact** 📬  
-🚀 **Kinh Kha** - [GitHub](https://github.com/akira2809) | [LinkedIn](#) | [Email](mailto:your-email@example.com)
+🚀 **Kinh Kha** - [GitHub](https://github.com/akira2809) | [LinkedIn](#) | [Email](khadoan.19809@gmail.com)
 
 ---
 
