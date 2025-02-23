@@ -2,7 +2,7 @@
 ---
 
 # **NodeJS basic Website** 🚀  
-_A short and catchy description of your project._
+_Um hi Im a student and i practice to become a frontend & backend developer (fullstack but need to know more about deploy) um i think that hehe i hope u enjoy it_
 
 ## **Table of Contents** 📌  
 - [About the Project](#about-the-project)  
