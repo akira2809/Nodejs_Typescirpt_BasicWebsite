@@ -47,12 +47,17 @@ class ProductService {
 }
 
 async function renderProducts() {
+    // Kiểm tra nếu DataTable đã được khởi tạo, nếu có thì xóa
+    if ($.fn.DataTable.isDataTable("#productTable")) {
+        $("#productTable").DataTable().destroy();
+    }
+
     const tableBody = document.getElementById("productTableBody")!;
     tableBody.innerHTML = "";
+
     const products = await ProductService.getProducts();
 
     products.forEach((product) => {
-        console.log(product)
         const row = document.createElement("tr");
         row.innerHTML = `
             <td><img src="${product.image}" alt="Product" style="width:100px"></td>
@@ -62,9 +67,6 @@ async function renderProducts() {
             <td>${product.stock}</td>
             <td><span class="badge bg-success">Active</span></td>
             <td class="action-buttons">
-                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewProductModal">
-                    <i class="fas fa-eye"></i>
-                </button>
                 <button class="btn btn-warning btn-sm edit-btn" data-id="${product.id}" data-bs-toggle="modal" data-bs-target="#editProductModal">
                     <i class="fas fa-edit"></i>
                 </button>
@@ -74,7 +76,11 @@ async function renderProducts() {
             </td>`;
         tableBody.appendChild(row);
     });
+
+    // Khởi tạo lại DataTable sau khi dữ liệu được render
+    $("#productTable").DataTable();
 }
+
 
 document.getElementById("saveNewProduct")?.addEventListener("click", async () => {
     const name = (document.getElementById("addProductName") as HTMLInputElement).value;
@@ -161,7 +167,8 @@ document.getElementById("productTableBody")?.addEventListener("click", async (ev
             (document.getElementById("editProductPrice") as HTMLInputElement).value = product.price;
             (document.getElementById("editProductStock") as HTMLInputElement).value = product.stock;
             (document.getElementById("editProductDescription") as HTMLTextAreaElement).value = product.description;
-
+            // (document.getElementById("editProductStatus") as HTMLTextAreaElement).value = product.status;
+        
             // Hiển thị ảnh sản phẩm hiện tại
             const imagePreview = document.getElementById("editProductImagePreview") as HTMLImageElement;
             imagePreview.src = product.image || "/api/placeholder/100/100";
@@ -189,7 +196,7 @@ document.getElementById("saveEditedProduct")?.addEventListener("click", async ()
     formData.append("price", (document.getElementById("editProductPrice") as HTMLInputElement).value);
     formData.append("stock", (document.getElementById("editProductStock") as HTMLInputElement).value);
     formData.append("description", (document.getElementById("editProductDescription") as HTMLTextAreaElement).value);
-
+    // formData.append("status", (document.getElementById("editProductStatus") as HTMLTextAreaElement).value);
     const imageInput = document.getElementById("editProductImage") as HTMLInputElement;
     if (imageInput.files && imageInput.files[0]) {
         formData.append("image", imageInput.files[0]);

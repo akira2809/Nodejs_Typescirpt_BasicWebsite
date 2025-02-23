@@ -231,12 +231,12 @@ async function updateProduct(req, res) {
                 });
             }
 
-            const { name, price, description, stock, categoryId } = req.body;
+            const { name, price, description, stock, categoryId ,status } = req.body;
             
             // Validate dữ liệu đầu vào
             if (!name || !price || !stock) {
                 return res.status(400).json({ 
-                    message: 'Name, price and stock are required' 
+                    message: 'Name, price and stock ,  are required' 
                 });
             }
 
@@ -268,6 +268,7 @@ async function updateProduct(req, res) {
                 description, 
                 image, 
                 stock, 
+                status,
                 categoryId
             );
 

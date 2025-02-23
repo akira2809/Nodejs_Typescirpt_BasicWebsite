@@ -55,12 +55,7 @@ async function renderCategories() {
   categories.forEach((category) => {
       const row = document.createElement("tr");
       row.innerHTML = `
-          <td><img src="${category.iconUrl}" class="category-icon" alt="${category.name}"></td>
           <td>${category.name}</td>
-          <td>${category.parentCategory || "-"}</td>
-         <td>${category.description}</td>
-          <td>${category.productCount}</td>
-          <td><span class="badge bg-${category.status === "Active" ? "success" : "danger"}">${category.status}</span></td>
           <td>
               <button class="btn btn-warning btn-sm edit-btn" data-id="${category.id}" data-bs-toggle="modal" data-bs-target="#editCategoryModal">
                   <i class="fas fa-edit"></i>

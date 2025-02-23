@@ -51,11 +51,14 @@ class ProductService {
 ProductService.BASE_URL = "http://localhost:3000/products";
 function renderProducts() {
     return __awaiter(this, void 0, void 0, function* () {
+        // Kiểm tra nếu DataTable đã được khởi tạo, nếu có thì xóa
+        if ($.fn.DataTable.isDataTable("#productTable")) {
+            $("#productTable").DataTable().destroy();
+        }
         const tableBody = document.getElementById("productTableBody");
         tableBody.innerHTML = "";
         const products = yield ProductService.getProducts();
         products.forEach((product) => {
-            console.log(product);
             const row = document.createElement("tr");
             row.innerHTML = `
             <td><img src="${product.image}" alt="Product" style="width:100px"></td>
@@ -65,9 +68,6 @@ function renderProducts() {
             <td>${product.stock}</td>
             <td><span class="badge bg-success">Active</span></td>
             <td class="action-buttons">
-                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewProductModal">
-                    <i class="fas fa-eye"></i>
-                </button>
                 <button class="btn btn-warning btn-sm edit-btn" data-id="${product.id}" data-bs-toggle="modal" data-bs-target="#editProductModal">
                     <i class="fas fa-edit"></i>
                 </button>
@@ -77,6 +77,8 @@ function renderProducts() {
             </td>`;
             tableBody.appendChild(row);
         });
+        // Khởi tạo lại DataTable sau khi dữ liệu được render
+        $("#productTable").DataTable();
     });
 }
 (_a = document.getElementById("saveNewProduct")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", () => __awaiter(void 0, void 0, void 0, function* () {
@@ -154,6 +156,7 @@ function renderProducts() {
             document.getElementById("editProductPrice").value = product.price;
             document.getElementById("editProductStock").value = product.stock;
             document.getElementById("editProductDescription").value = product.description;
+            // (document.getElementById("editProductStatus") as HTMLTextAreaElement).value = product.status;
             // Hiển thị ảnh sản phẩm hiện tại
             const imagePreview = document.getElementById("editProductImagePreview");
             imagePreview.src = product.image || "/api/placeholder/100/100";
@@ -179,6 +182,7 @@ function renderProducts() {
     formData.append("price", document.getElementById("editProductPrice").value);
     formData.append("stock", document.getElementById("editProductStock").value);
     formData.append("description", document.getElementById("editProductDescription").value);
+    // formData.append("status", (document.getElementById("editProductStatus") as HTMLTextAreaElement).value);
     const imageInput = document.getElementById("editProductImage");
     if (imageInput.files && imageInput.files[0]) {
         formData.append("image", imageInput.files[0]);

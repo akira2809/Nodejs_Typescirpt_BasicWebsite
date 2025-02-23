@@ -1,312 +1,357 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Product Management</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- DataTables CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css"
+    />
+    <!-- jQuery (cần cho DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+
     <style>
-        .sidebar {
-            height: 100vh;
-            background-color: #343a40;
-            position: fixed;
-            padding-top: 20px;
-        }
-        .nav-link {
-            color: #fff;
-            padding: 10px 20px;
-        }
-        .nav-link:hover {
-            background-color: #4b545c;
-            color: #fff;
-        }
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-        }
-        .product-image {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-        }
-        .action-buttons .btn {
-            padding: 0.25rem 0.5rem;
-            margin: 0 0.2rem;
-        }
+      .sidebar {
+        height: 100vh;
+        background-color: #343a40;
+        position: fixed;
+        padding-top: 20px;
+      }
+      .nav-link {
+        color: #fff;
+        padding: 10px 20px;
+      }
+      .nav-link:hover {
+        background-color: #4b545c;
+        color: #fff;
+      }
+      .main-content {
+        margin-left: 250px;
+        padding: 20px;
+      }
+      .product-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+      }
+      .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+        margin: 0 0.2rem;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Sidebar -->
     <div class="sidebar col-md-3 col-lg-2">
-        <div class="text-center mb-4">
-            <h4 class="text-white">Admin Panel</h4>
-        </div>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="admin.html"><i class="fas fa-home me-2"></i>Dashboard</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="adminproduct.html"><i class="fas fa-box me-2"></i>Products</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="admincategory.html"><i class="fas fa-users me-2"></i>Users</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#"><i class="fas fa-shopping-cart me-2"></i>Orders</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#"><i class="fas fa-cog me-2"></i>Settings</a>
-            </li>
-        </ul>
+      <div class="text-center mb-4">
+        <h4 class="text-white">Admin Panel</h4>
+      </div>
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a class="nav-link" href="admin.html"
+            ><i class="fas fa-home me-2"></i>Dashboard</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="adminproduct.html"
+            ><i class="fas fa-box me-2"></i>Products</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="admincategory.html"
+            ><i class="fas fa-users me-2"></i>Users</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#"
+            ><i class="fas fa-shopping-cart me-2"></i>Orders</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#"
+            ><i class="fas fa-cog me-2"></i>Settings</a
+          >
+        </li>
+      </ul>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Product Management</h2>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                <i class="fas fa-plus me-2"></i>Add New Product
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Product Management</h2>
+        <button
+          class="btn btn-primary"
+          data-bs-toggle="modal"
+          data-bs-target="#addProductModal"
+        >
+          <i class="fas fa-plus me-2"></i>Add New Product
+        </button>
+      </div>
+
+      <!-- Products Table -->
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table id="productTable" class="display">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="productTableBody">
+                <!-- Dữ liệu sẽ được render tại đây -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal fade" id="addProductModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Add New Product</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="addProductForm">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Product Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="addProductName"
+                    required
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Category</label>
+                  <select class="form-select" id="addProductCategory" required>
+                    <option value="">Select Category</option>
+                    <option value="1">MALE</option>
+                    <option value="2">FEMALE</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Price</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="addProductPrice"
+                    required
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Stock Quantity</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="addProductStock"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea
+                  class="form-control"
+                  id="addProductDescription"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Product Image</label>
+                <input
+                  type="file"
+                  class="form-control"
+                  id="addProductImage"
+                  accept="image/*"
+                />
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
             </button>
+            <button type="button" id="saveNewProduct" class="btn btn-primary">
+              Add Product
+            </button>
+          </div>
         </div>
-
-        <!-- Filters -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <input type="text" class="form-control" placeholder="Search products...">
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select">
-                            <option value="">All Categories</option>
-                            <option>Electronics</option>
-                            <option>Clothing</option>
-                            <option>Books</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select">
-                            <option value="">Sort By</option>
-                            <option>Name (A-Z)</option>
-                            <option>Price (Low to High)</option>
-                            <option>Stock (Low to High)</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-secondary w-100">Apply Filters</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Products Table -->
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Image</th>
-                                <th>Product Name</th>
-                                <th>Category</th>
-                                <th>Price</th>
-                                <th>Stock</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="productTableBody">
-                            
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination -->
-                <nav class="mt-3">
-                    <ul class="pagination justify-content-end">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1">Previous</a>
-                        </li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">Next</a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
+      </div>
     </div>
-
-   <!-- Add Product Modal -->
-<div class="modal fade" id="addProductModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add New Product</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="addProductForm">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Product Name</label>
-                            <input type="text" class="form-control" id="addProductName" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Category</label>
-                            <select class="form-select" id="addProductCategory" required>
-                                <option value="">Select Category</option>
-                                <option value="1">MALE</option>
-                                <option value="2">FEMALE</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Price</label>
-                            <input type="number" class="form-control" id="addProductPrice" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Stock Quantity</label>
-                            <input type="number" class="form-control" id="addProductStock" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control" id="addProductDescription" rows="3"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Product Image</label>
-                        <input type="file" class="form-control" id="addProductImage" accept="image/*">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="saveNewProduct" class="btn btn-primary">Add Product</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-    <!-- View Product Modal -->
-    <div class="modal fade" id="viewProductModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Product Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="text-center mb-3">
-                        <img src="/api/placeholder/200/200" alt="Product" class="img-fluid">
-                    </div>
-                    <dl class="row">
-                        <dt class="col-sm-4">Product Name</dt>
-                        <dd class="col-sm-8">Smartphone X</dd>
-
-                        <dt class="col-sm-4">Category</dt>
-                        <dd class="col-sm-8">Electronics</dd>
-
-                        <dt class="col-sm-4">Price</dt>
-                        <dd class="col-sm-8">$999.99</dd>
-
-                        <dt class="col-sm-4">Stock</dt>
-                        <dd class="col-sm-8">50</dd>
-
-                        <dt class="col-sm-4">Status</dt>
-                        <dd class="col-sm-8"><span class="badge bg-success">Active</span></dd>
-
-                        <dt class="col-sm-4">Description</dt>
-                        <dd class="col-sm-8">Latest smartphone with advanced features and high performance.</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <<!-- Edit Product Modal -->
-<div class="modal fade" id="editProductModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal fade" id="editProductModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Product</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editProductForm">
-                    <input type="hidden" id="editProductId"> <!-- ID ẩn để lưu sản phẩm -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Product Name</label>
-                            <input type="text" class="form-control" id="editProductName" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Category</label>
-                            <select class="form-select" id="editProductCategory" required>
-                                <option value="1">MALE</option>
-                                <option value="2">FEMALE</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Price</label>
-                            <input type="number" class="form-control" id="editProductPrice" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Stock Quantity</label>
-                            <input type="number" class="form-control" id="editProductStock" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control" id="editProductDescription" rows="3"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Product Image</label>
-                        <input type="file" class="form-control" id="editProductImage">
-                        <div class="mt-2">
-                            <img id="editProductImagePreview" src="/api/placeholder/100/100" alt="Current Image" class="img-thumbnail">
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveEditedProduct">Save Changes</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<!-- Delete Product Modal -->
-<div class="modal fade" id="deleteProductModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Delete Product</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete this product? This action cannot be undone.</p>
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Warning: Deleting this product will affect all associated orders and inventory records.
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Product</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="editProductForm">
+              <input type="hidden" id="editProductId" />
+              <!-- ID ẩn để lưu sản phẩm -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Product Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="editProductName"
+                    required
+                  />
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger">Delete Product</button>
-            </div>
+                <div class="col-md-6">
+                  <label class="form-label">Category</label>
+                  <select class="form-select" id="editProductCategory" required>
+                    <option value="1">MALE</option>
+                    <option value="2">FEMALE</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Price</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="editProductPrice"
+                    required
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Stock Quantity</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="editProductStock"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea
+                  class="form-control"
+                  id="editProductDescription"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="editProductStatus" required>
+                  <option value="1">Active</option>
+                  <option value="2">Inactive</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Product Image</label>
+                <input type="file" class="form-control" id="editProductImage" />
+                <div class="mt-2">
+                  <img
+                    id="editProductImagePreview"
+                    src="/api/placeholder/100/100"
+                    alt="Current Image"
+                    class="img-thumbnail"
+                  />
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="saveEditedProduct"
+            >
+              Save Changes
+            </button>
+          </div>
         </div>
+      </div>
     </div>
-</div>
+
+    <!-- Delete Product Modal -->
+    <div class="modal fade" id="deleteProductModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Delete Product</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Are you sure you want to delete this product? This action cannot
+              be undone.
+            </p>
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              Warning: Deleting this product will affect all associated orders
+              and inventory records.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-danger">Delete Product</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="../dist/productadmin.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+  </body>
 </html>

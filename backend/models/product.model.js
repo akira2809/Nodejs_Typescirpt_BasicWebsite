@@ -140,7 +140,7 @@ async function createProduct(name, price, description, image, stock, categoryId)
 }
 
 
-async function updateProduct(id, name, price, description, image, stock, categoryId) {
+async function updateProduct(id, name, price, description, image, stock, categoryId , status) {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -155,11 +155,11 @@ async function updateProduct(id, name, price, description, image, stock, categor
         // Cập nhật thông tin sản phẩm
         const updateProductQuery = `
             UPDATE products 
-            SET name = $1, price = $2, description = $3, image = $4, stock = $5
+            SET name = $1, price = $2, description = $3, image = $4, stock = $5 ,
             WHERE id = $6 RETURNING *
         `;
         const productRes = await client.query(updateProductQuery, 
-            [name, price, description, image, stock, id]
+            [name, price, description, image, stock,  id]
         );
 
         // Cập nhật category trong bảng product_categories
