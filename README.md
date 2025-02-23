@@ -52,10 +52,22 @@ npm install
 
 Set up `.env` file (example):  
 ```env
-PORT=5000
-DATABASE_URL=your_database_url
-JWT_SECRET=your_secret_key
-PAYOS_API_KEY=your_payos_key
+HOST=localhost
+USER=postgres
+PASSWORD= your pass
+DATABASE=asm
+PG_PORT=5432
+PORT=3000
+SECRET_KEY=khadeptraivl
+EMAIL_USER= your email
+EMAIL_PASS= your pass
+PAYOS_CLIENT_KEY=key
+PAYOS_API_KEY=key
+PAYOS_CHECKSUM_KEY=key
+
+CLOUDINARY_CLOUD_NAME=key
+CLOUDINARY_API_KEY=key
+CLOUDINARY_API_SECRET=key
 ```
 
 Start the server:  
