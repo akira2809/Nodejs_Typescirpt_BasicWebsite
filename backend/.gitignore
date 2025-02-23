@@ -1,2 +1,1 @@
-
-echo ".env" >> .gitignore
+.env
