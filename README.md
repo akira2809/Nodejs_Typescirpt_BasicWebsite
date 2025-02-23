@@ -72,7 +72,7 @@ CLOUDINARY_API_SECRET=key
 
 Start the server:  
 ```sh
-npm run dev
+npm start
 ```
 
 ---
