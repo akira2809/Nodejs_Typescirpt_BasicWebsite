@@ -34,7 +34,7 @@ Example:
 ---
 
 ## **Tech Stack** 🛠  
-- **Frontend:** TypeScript,Html
+- **Frontend:** TypeScript
 - **Backend:** Node.js, Express  
 - **Database:** PostgreSQL
 - **Authentication:** JWT + bcrypt  
