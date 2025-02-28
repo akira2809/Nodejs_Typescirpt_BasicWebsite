@@ -18,7 +18,7 @@ router.get("/category/:categoryId", productController.getOneProductsByCategory);
 
 router.get('/search', productController.searchProducts);
 
-router.post('/orders', orderController.createOrder);
+router.post('/orders/create', orderController.createOrder);
 
 router.get('/orders/:id', orderController.getOrderDetails);
 

@@ -414,7 +414,7 @@ const loadProductDetail = () => __awaiter(void 0, void 0, void 0, function* () {
         })),
     };
     try {
-        const response = yield fetch(`${BASE_URL}/products/orders`, {
+        const response = yield fetch(`${BASE_URL}/products/orders/create`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -426,16 +426,17 @@ const loadProductDetail = () => __awaiter(void 0, void 0, void 0, function* () {
         if (!response.ok) {
             throw new Error(responseData.error || "Có lỗi xảy ra khi đặt hàng.");
         }
-        console.log("🛒 Đơn hàng đã đặt:", responseData);
-        localStorage.removeItem("cart");
-        updateCartUI();
-        alert("Đặt hàng thành công!");
-        setTimeout(() => {
-            window.location.href = "cart.html";
-        }, 1000);
+        console.log("✅ Đơn hàng đã tạo:", responseData);
+        // ✅ Nếu có URL thanh toán từ PayOS, chuyển hướng người dùng
+        if (responseData.payment_url) {
+            window.location.href = responseData.payment_url;
+        }
+        else {
+            alert("Đặt hàng thành công nhưng không có link thanh toán!");
+        }
     }
     catch (error) {
-        console.error("Lỗi khi đặt hàng:", error);
+        console.error("❌ Lỗi khi đặt hàng:", error);
         alert("Thanh toán thất bại: " + (error instanceof Error ? error.message : String(error)));
     }
 }));

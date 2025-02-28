@@ -231,7 +231,7 @@ async function updateProduct(req, res) {
                 });
             }
 
-            const { name, price, description, stock, categoryId ,status } = req.body;
+            const { name, price, description, stock, categoryId } = req.body;
             
             // Validate dữ liệu đầu vào
             if (!name || !price || !stock) {
@@ -268,7 +268,6 @@ async function updateProduct(req, res) {
                 description, 
                 image, 
                 stock, 
-                status,
                 categoryId
             );
 

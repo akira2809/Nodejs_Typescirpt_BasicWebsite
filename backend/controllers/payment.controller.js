@@ -1,6 +1,7 @@
 // controllers/paymentController.js
 const { createPayment } = require('../services/payosService');
 const productModel = require('../models/product.model');
+const orderModel = require('../models/order.model');
 
 const createPaymentHandler = async (req, res) => {
     try {
@@ -12,15 +13,29 @@ const createPaymentHandler = async (req, res) => {
             return res.status(404).json({ error: 'Product not found' });
         }
         
-        // Tạo đơn hàng thanh toán
-        const order = {
+        // Tạo đơn hàng trong database
+        const orderData = {
+            productId,
+            quantity,
             amount: product.price * quantity,
-            description: `Purchase of ${product.name}`,
-            orderInfo: { productId, quantity }
+            status: 'pending' // Trạng thái chờ thanh toán
         };
-        
-        const paymentResponse = await createPayment(order);
-        res.json(paymentResponse);
+        const order = await orderModel.createOrder(orderData);
+
+        // Tạo đơn hàng thanh toán PayOS
+        const payosOrder = {
+            amount: order.amount,
+            description: `Purchase of ${product.name}`,
+            returnUrl: `http://localhost:3000/payment-success?orderId=${order.id}`, // Redirect sau khi thanh toán thành công
+            cancelUrl: `http://localhost:3000/payment-failed?orderId=${order.id}`,
+            orderInfo: { orderId: order.id, productId, quantity }
+        };
+
+        const paymentResponse = await createPayment(payosOrder);
+
+        // Trả về link thanh toán để frontend redirect
+        res.json({ paymentUrl: paymentResponse.checkoutUrl });
+
     } catch (error) {
         res.status(500).json({ error: 'Failed to create payment' });
     }

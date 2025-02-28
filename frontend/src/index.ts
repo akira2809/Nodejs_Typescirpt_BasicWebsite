@@ -433,6 +433,7 @@ document.querySelector("#checkout-btn")?.addEventListener("click", async () => {
 
   const orderData = {
     user_id: userId,
+
     total_amount: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
     items: cart.map((item) => ({
       product_id: item.id,
@@ -442,7 +443,7 @@ document.querySelector("#checkout-btn")?.addEventListener("click", async () => {
   };
 
   try {
-    const response = await fetch(`${BASE_URL}/products/orders`, {
+    const response = await fetch(`${BASE_URL}/products/orders/create`, { // API sửa thành orders/create
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -457,19 +458,20 @@ document.querySelector("#checkout-btn")?.addEventListener("click", async () => {
       throw new Error(responseData.error || "Có lỗi xảy ra khi đặt hàng.");
     }
 
-    console.log("🛒 Đơn hàng đã đặt:", responseData);
-    localStorage.removeItem("cart");
-    updateCartUI();
-    alert("Đặt hàng thành công!");
+    console.log("✅ Đơn hàng đã tạo:", responseData);
 
-    setTimeout(() => {
-      window.location.href = "cart.html";
-    }, 1000);
+    // ✅ Nếu có URL thanh toán từ PayOS, chuyển hướng người dùng
+    if (responseData.payment_url) {
+      window.location.href = responseData.payment_url;
+    } else {
+      alert("Đặt hàng thành công nhưng không có link thanh toán!");
+    }
   } catch (error) {
-    console.error("Lỗi khi đặt hàng:", error);
+    console.error("❌ Lỗi khi đặt hàng:", error);
     alert("Thanh toán thất bại: " + (error instanceof Error ? error.message : String(error)));
   }
 });
+
 
 document.getElementById("logout-btn")?.addEventListener("click", () => {
   localStorage.removeItem("token");
@@ -558,6 +560,8 @@ function showError(message: string) {
     orderContainer.innerHTML = `<p style="color: red;">${message}</p>`;
   }
 }
+
+
 
 
 // ⏳ Chạy khi trang tải xong
